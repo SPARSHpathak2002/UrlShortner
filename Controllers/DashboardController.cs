@@ -52,6 +52,19 @@ namespace UrlShortner.Controllers
             return Ok();
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var urlInfo = await _context.UrlInfos.FirstOrDefaultAsync(u => u.ShortenedUrlId == id);
+            if (urlInfo == null)
+            {
+                return NotFound();
+            }
+            _context.UrlInfos.Remove(urlInfo);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
         private string GenerateShortenedUrl()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";

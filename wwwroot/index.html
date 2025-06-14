@@ -36,6 +36,33 @@
                                 this.fetchUrls();
                             }
                         });
+                },
+                deleteUrl(shortenedUrl) {
+                    // Extract the id from the shortenedUrl (last path segment)
+                    try {
+                        const urlObj = new URL(shortenedUrl);
+                        // Remove leading slash if present
+                        let id = urlObj.pathname.replace(/^\/+/, '');
+                        fetch(`/api/dashboard/${id}`, {
+                            method: 'DELETE'
+                        })
+                            .then(res => {
+                                if (res.ok || res.status === 204) {
+                                    this.fetchUrls();
+                                }
+                            });
+                    } catch (e) {
+                        // fallback: try splitting by slash
+                        const id = shortenedUrl.split('/').pop();
+                        fetch(`/api/dashboard/${id}`, {
+                            method: 'DELETE'
+                        })
+                            .then(res => {
+                                if (res.ok || res.status === 204) {
+                                    this.fetchUrls();
+                                }
+                            });
+                    }
                 }
             }
         }
@@ -112,10 +139,13 @@
                 <ul class="list-group" x-show="!loading && urls.length > 0">
                     <template x-for="(url, idx) in urls" :key="idx">
                         <li class="list-group-item">
-                            <strong>
-                                <a :href="url.shortenedUrl" target="_blank" x-text="url.shortenedUrl"></a>
-                            </strong><br>
-                            <small x-text="url.mainUrl"></small>
+                            <div>
+                                <strong>
+                                    <a :href="url.shortenedUrl" target="_blank" x-text="url.shortenedUrl"></a>
+                                </strong><br>
+                                <small x-text="url.mainUrl"></small>
+                            </div>
+                            <button class="btn btn-danger btn-sm" @click="deleteUrl(url.shortenedUrl)">Delete</button>
                         </li>
                     </template>
                 </ul>
