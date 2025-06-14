@@ -1,10 +1,20 @@
+﻿using Microsoft.EntityFrameworkCore;
+using UrlShortner.Data;
+using UrlShortner.Controllers;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddDbContext<UrlShortnerContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("UrlShortnerDb")));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen();
+
 
 var app = builder.Build();
 
@@ -17,10 +27,17 @@ app.UseDefaultFiles();
 
 app.UseStaticFiles();
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+};
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
 
 app.Run();
