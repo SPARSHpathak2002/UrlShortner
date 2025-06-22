@@ -32,7 +32,12 @@ namespace UrlShortner.Controllers
                 .Select(u => new
                 {
                     mainUrl = u.OriginalUrl,
-                    shortenedUrl = $"{domain}/{u.ShortenedUrlId}"
+                    shortenedUrl = $"{domain}/{u.ShortenedUrlId}",
+                    createdAt = u.CreatedAt,
+                    countsClicked = _context.UrlStats
+                        .Where(s => s.UrlId == u.Id)
+                        .Select(s => s.CountsClicked)
+                        .FirstOrDefault()
                 })
                 .ToList();
 
@@ -49,6 +54,12 @@ namespace UrlShortner.Controllers
             var urlInfo = new UrlInfo { OriginalUrl = url, ShortenedUrlId = GenerateShortenedUrl(), CreatedAt = DateTime.UtcNow };
             _context.UrlInfos.Add(urlInfo);
             await _context.SaveChangesAsync();
+
+            // Create UrlStats entry
+            var urlStats = new UrlStats { UrlId = urlInfo.Id, CountsClicked = 0 };
+            _context.Set<UrlStats>().Add(urlStats);
+            await _context.SaveChangesAsync();
+
             return Ok();
         }
 
